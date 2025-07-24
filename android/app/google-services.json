@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "558334663057",
+    "project_id": "futter54-2a6f1",
+    "storage_bucket": "futter54-2a6f1.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:558334663057:android:5dfaa8197ac945fad5e230",
+        "android_client_info": {
+          "package_name": "com.tla.bookapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCDdK2Ua0hs-OVoD1uA1_cPo_pwuUbeOzs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
