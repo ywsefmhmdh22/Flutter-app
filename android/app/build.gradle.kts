@@ -23,8 +23,8 @@ android {
         applicationId = "com.tla.bookapp"
         minSdk = 23
         targetSdk = 35
-        versionCode = 9
-        versionName = "1.9.1"
+        versionCode = 10
+        versionName = "2.0.0"
         multiDexEnabled = true
     }
 

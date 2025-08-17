@@ -1,5 +1,79 @@
 import 'package:flutter/material.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:maharat_jazb_alnisa/main.dart'; // تأكد من وجود BannerAdWidget هنا
+
+// --- هذا هو الكود الفعلي لـ BannerAdWidget المُعدّل ---
+// Note: This class should be in main.dart or a separate file imported by both pages.
+// I am including it here for a complete, runnable example.
+class BannerAdWidget extends StatefulWidget {
+  const BannerAdWidget({super.key});
+
+  @override
+  State<BannerAdWidget> createState() => _BannerAdWidgetState();
+}
+
+class _BannerAdWidgetState extends State<BannerAdWidget> {
+  BannerAd? _bannerAd;
+  bool _isAdLoaded = false;
+  final String _adUnitId = 'ca-app-pub-8081293973220877/5841556409'; // Replace with your actual banner Ad Unit ID
+
+  @override
+  void initState() {
+    super.initState();
+    _loadBannerAd();
+  }
+
+  void _loadBannerAd() async {
+    final AdSize? size = await AdSize.getAnchoredAdaptiveBannerAdSize(
+      MediaQuery.of(context).orientation,
+      MediaQuery.of(context).size.width.truncate(),
+    );
+
+    if (size == null) {
+      debugPrint('Unable to get adaptive banner size.');
+      return;
+    }
+
+    _bannerAd = BannerAd(
+      adUnitId: _adUnitId,
+      request: const AdRequest(),
+      size: size,
+      listener: BannerAdListener(
+        onAdLoaded: (ad) {
+          debugPrint('BannerAd loaded.');
+          setState(() {
+            _isAdLoaded = true;
+          });
+        },
+        onAdFailedToLoad: (ad, err) {
+          debugPrint('BannerAd failed to load: $err');
+          ad.dispose();
+        },
+      ),
+    );
+    _bannerAd!.load();
+  }
+
+  @override
+  void dispose() {
+    _bannerAd?.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_isAdLoaded && _bannerAd != null) {
+      return SizedBox(
+        width: _bannerAd!.size.width.toDouble(),
+        height: _bannerAd!.size.height.toDouble(),
+        child: AdWidget(ad: _bannerAd!),
+      );
+    } else {
+      return const SizedBox.shrink();
+    }
+  }
+}
+// ------------------------------------------
 
 class AdvanceAttractionPage extends StatefulWidget {
   const AdvanceAttractionPage({super.key});
@@ -11,6 +85,37 @@ class AdvanceAttractionPage extends StatefulWidget {
 class _AdvanceAttractionPageState extends State<AdvanceAttractionPage> {
   double _fontSize = 16.0;
 
+  // تعريف الإعلان المدمج
+  NativeAd? _nativeAd;
+  bool _isNativeAdLoaded = false;
+  final String adUnitId = 'ca-app-pub-8081293973220877/5104529502';
+
+  @override
+  void initState() {
+    super.initState();
+    // تحميل الإعلان المدمج عند تهيئة الصفحة
+    _loadNativeAd();
+  }
+
+  // دالة لتحميل الإعلان المدمج
+  void _loadNativeAd() {
+    _nativeAd = NativeAd(
+      adUnitId: adUnitId,
+      factoryId: 'listTile', // تأكد من أن هذا الـ factoryId موجود في إعدادات AdMob
+      request: const AdRequest(),
+      listener: NativeAdListener(
+        onAdLoaded: (ad) {
+          setState(() {
+            _isNativeAdLoaded = true;
+          });
+        },
+        onAdFailedToLoad: (ad, error) {
+          _nativeAd?.dispose();
+        },
+      ),
+    )..load();
+  }
+
   void _increaseFontSize() {
     setState(() {
       _fontSize = _fontSize + 2.0 < 24.0 ? _fontSize + 2.0 : 24.0;
@@ -21,6 +126,12 @@ class _AdvanceAttractionPageState extends State<AdvanceAttractionPage> {
     setState(() {
       _fontSize = _fontSize - 2.0 > 12.0 ? _fontSize - 2.0 : 12.0;
     });
+  }
+
+  @override
+  void dispose() {
+    _nativeAd?.dispose();
+    super.dispose();
   }
 
   @override
@@ -51,7 +162,7 @@ class _AdvanceAttractionPageState extends State<AdvanceAttractionPage> {
                       ),
                       Expanded(
                         child: Text(
-                          'التقدم في بناء الجاذبيه و تعميق الارتباط العاطفي',
+                          'التقدم في بناء الجاذبيه ',
                           style: TextStyle(
                             fontFamily: 'Amiri',
                             fontSize: 16,
@@ -109,9 +220,7 @@ class _AdvanceAttractionPageState extends State<AdvanceAttractionPage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      '''
- التقدم في بناء الجاذبية
-التقدم في بناء الجاذبية لا يعني التخلي عن التقنيات التي تناولنا الحديث عنها في قسم بناء الجاذبية، بل هو استمرار لها مع إدخال تقنيات جديدة.
+                      ''' لا يعني التخلي عن التقنيات التي تناولنا الحديث عنها في قسم بناء الجاذبية، بل هو استمرار لها مع إدخال تقنيات جديده
 
 ### 1. قواعد وتقنيات إضافية للمحادثة
 * دعها تشعر بأنك تسعد لرؤيتها سعادة لا يمكن وصفها، عاملها وكأنها أهم شخص تعرفت عليه في حياتك كلها، دعها تشعر بأنك تهتم لها، وتحبها حبًا حقيقيًا، ابتسم وعبر عن مدى سعادتك لرؤيتها واللقاء بها، ألا تحب أنت أن تعامل بهذه الطريقة عندما تلتقي بشخص ما؟ (إنها واحدة من أهم أسرار الجاذبية).

@@ -1,5 +1,79 @@
 import 'package:flutter/material.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:maharat_jazb_alnisa/main.dart'; // تأكد من أن BannerAdWidget معرف هنا
+
+// --- هذا هو الكود الفعلي لـ BannerAdWidget المُعدّل ---
+class BannerAdWidget extends StatefulWidget {
+  const BannerAdWidget({super.key});
+
+  @override
+  State<BannerAdWidget> createState() => _BannerAdWidgetState();
+}
+
+class _BannerAdWidgetState extends State<BannerAdWidget> {
+  BannerAd? _bannerAd;
+  bool _isAdLoaded = false;
+  final String _adUnitId = 'ca-app-pub-8081293973220877/5841556409'; // غير هذا بـ Ad Unit ID الخاص بإعلان البانر
+
+  @override
+  void initState() {
+    super.initState();
+    _loadBannerAd();
+  }
+
+  void _loadBannerAd() async {
+    // *هذا هو الجزء الذي تم تعديله*
+    // نستخدم getAnchoredAdaptiveBannerAdSize لحساب حجم الإعلان التكيفي
+    final AdSize? size = await AdSize.getAnchoredAdaptiveBannerAdSize(
+      MediaQuery.of(context).orientation,
+      MediaQuery.of(context).size.width.truncate(),
+    );
+
+    if (size == null) {
+      debugPrint('Unable to get adaptive banner size.');
+      return;
+    }
+
+    _bannerAd = BannerAd(
+      adUnitId: _adUnitId,
+      request: const AdRequest(),
+      size: size,
+      listener: BannerAdListener(
+        onAdLoaded: (ad) {
+          debugPrint('BannerAd loaded.');
+          setState(() {
+            _isAdLoaded = true;
+          });
+        },
+        onAdFailedToLoad: (ad, err) {
+          debugPrint('BannerAd failed to load: $err');
+          ad.dispose();
+        },
+      ),
+    );
+    _bannerAd!.load();
+  }
+
+  @override
+  void dispose() {
+    _bannerAd?.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_isAdLoaded && _bannerAd != null) {
+      return SizedBox(
+        width: _bannerAd!.size.width.toDouble(),
+        height: _bannerAd!.size.height.toDouble(),
+        child: AdWidget(ad: _bannerAd!),
+      );
+    } else {
+      return const SizedBox.shrink();
+    }
+  }
+}
+// ------------------------------------------
 
 class BuildAttractionPage extends StatefulWidget {
   const BuildAttractionPage({super.key});
@@ -10,6 +84,60 @@ class BuildAttractionPage extends StatefulWidget {
 
 class _BuildAttractionPageState extends State<BuildAttractionPage> {
   double _fontSize = 16.0;
+
+  // تعريف الإعلانات المدمجة
+  NativeAd? _nativeAd1;
+  NativeAd? _nativeAd2;
+
+  bool _isNativeAd1Loaded = false;
+  bool _isNativeAd2Loaded = false;
+
+  final String adUnitId = 'ca-app-pub-8081293973220877/5104529502';
+
+  @override
+  void initState() {
+    super.initState();
+    // تحميل الإعلانات المدمجة عند تهيئة الصفحة
+    _loadNativeAd1();
+    _loadNativeAd2();
+  }
+
+  // دوال لتحميل الإعلانات المدمجة
+  void _loadNativeAd1() {
+    _nativeAd1 = NativeAd(
+      adUnitId: adUnitId,
+      factoryId: 'listTile',
+      request: const AdRequest(),
+      listener: NativeAdListener(
+        onAdLoaded: (ad) {
+          setState(() {
+            _isNativeAd1Loaded = true;
+          });
+        },
+        onAdFailedToLoad: (ad, error) {
+          _nativeAd1?.dispose();
+        },
+      ),
+    )..load();
+  }
+
+  void _loadNativeAd2() {
+    _nativeAd2 = NativeAd(
+      adUnitId: adUnitId,
+      factoryId: 'listTile',
+      request: const AdRequest(),
+      listener: NativeAdListener(
+        onAdLoaded: (ad) {
+          setState(() {
+            _isNativeAd2Loaded = true;
+          });
+        },
+        onAdFailedToLoad: (ad, error) {
+          _nativeAd2?.dispose();
+        },
+      ),
+    )..load();
+  }
 
   void _increaseFontSize() {
     setState(() {
@@ -24,10 +152,17 @@ class _BuildAttractionPageState extends State<BuildAttractionPage> {
   }
 
   @override
+  void dispose() {
+    _nativeAd1?.dispose();
+    _nativeAd2?.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: PreferredSize(
-        preferredSize: Size.fromHeight(80.0),
+        preferredSize: const Size.fromHeight(80.0),
         child: AppBar(
           backgroundColor: Colors.pink.shade100,
           automaticallyImplyLeading: false,
@@ -110,13 +245,11 @@ class _BuildAttractionPageState extends State<BuildAttractionPage> {
                   children: [
                     Text(
                       '''
-### 1. بناء الجاذبية
 يبدأ بناء الجاذبية من لقاء التعارف الأول.
 
 #### لغة الجسد
 الاقتراب من الفتاة يجب أن يتم من الأمام (فالنساء تخشى من أي اقتراب من الخلف)، وعندما تصبح على مقربة مناسبة منها، يجب أن تنعطف قليلاً، لتشكل وقفتك مع وقفتها زاوية ٤٥ درجة، حيث يشعر هذا الوضع الفتاة بمزيد من الحرية، وعدم وجود ضغط عليها، فيما يعتبر الوقوف مع الفتاة في اللقاء الأول وجهًا لوجه تضييق على الفتاة وإغلاق لطريقها، مما قد يشعرها بالخوف. قف على مسافة مناسبة من الفتاة، ولا تدخل في مساحتها الشخصية، وإذا ما تحركت هي للخلف قليلاً، فلا تخطو أنت للأمام. قف وساقاك متباعدتان، ومنطقة تشعب الرجلين ظاهرة، إحدى القدمين يحبذ أن تكون أمام الأخرى، وتميل شيئًا ما باتجاه موضع وقوف الفتاة، افتح ذراعيك ودع يديك تتدليان بحرية، لا تشبك يديك ببعضهما أمام صدرك، الكثير من الشبان يضعون أيديهم عاليًا بحيث تصبح حاجزًا بينهم وبين الفتاة، هذا الشيء يجب تجنبه، لا تدع رأسك يتدلى نحو الأرض، ارفع رأسك، أبقِ على جسدك منتصبًا مشدودًا، اسحب كتفيك إلى الخلف، أبرز صدرك إلى الأمام، بعبارة أخرى: خذ وضعية التصرف المسيطر التي شرحتها لك سابقًا.
-''' // Corrected: Closing the first multiline string here
-                      ,
+''',
                       style: TextStyle(
                         fontFamily: 'Amiri',
                         fontSize: _fontSize,
@@ -125,14 +258,14 @@ class _BuildAttractionPageState extends State<BuildAttractionPage> {
                       ),
                       textAlign: TextAlign.justify,
                     ),
-                    const SizedBox(height: 16.0), // مسافة قبل الصورة
+                    const SizedBox(height: 16.0),
                     Center(
                       child: Image.asset(
-                        'assets/images/body_language_posture.jpg', // مسار الصورة
+                        'assets/images/body_language_posture.jpg',
                         fit: BoxFit.contain,
                       ),
                     ),
-                    const SizedBox(height: 16.0), // مسافة بعد الصورة
+                    const SizedBox(height: 16.0),
                     Text(
                       '''
 اجعل وجهك بشوشًا منيرًا، ودع الابتسامة ترتسم عليه، واحرص على أن تبدي أسنانك بين الحين والآخر، حافظ على الاتصال بالعين، لكي تبني الألفة القوية مع الفتاة وتثير إعجابها، يجب أن تلتقي نظراتك بنظراتها ٦٠ إلى ٧٠ % من الوقت، لا تزح نظرك عنها قبل أن تزيح هي نظرها أولاً.
@@ -171,8 +304,30 @@ class _BuildAttractionPageState extends State<BuildAttractionPage> {
 * من الملاحظات أن اتخاذ وضعيتين مختلفتين للجسد تحرر في الدماغ تفاعلين كيميائيين مختلفين، وبالمقابل تعود هذه المواد المتحررة لتؤثر على تصرفات الشخص وثقته بنفسه.
 * فعلى سبيل المثال: عندما يتخذ جسدك الوضعية المنفتحة، بمعنى آخر عندما تأخذ لنفسك مساحة أكبر في الوقوف والجلوس والمشي (الأرجل المتباعدة، الجسم المنتصب، الرأس المرفوع، الأيدي المتدلية بحرية)، فإن ذلك سيؤدي إلى تغير حالتك النفسية إلى الأفضل. ففي دراسة علمية تم تأكيد أن هذه الوضعية تحفز إفراز كل من هرمون السيروتونين والتيستسترون، واللذان يعطيان المرء الشعور بالجاهزية لاقتحام المخاطر.
 * الهرمون الأول (هرمون السيروتونين)، والمعروف بهرمون السعادة، وهو الهرمون المسؤول عن إعطاء الشعور بالثقة بالنفس، من خلال تحفيز إفراز هذا الهرمون في أجسادنا، تتحسن ثقتنا بأنفسنا، يتحسن مزاجنا وتتحسن مقدرتنا على التفاعل الاجتماعي والمحادثة وبناء العلاقات العامة، أما الهرمون الثاني (هرمون التيستسترون) فهو الهرمون المسؤول عن إعطاء الشعور بالقوة والسيطرة.
-* وعلى العكس من ذلك تمامًا عندما يتبنى الشخص وضعية أو هيئة الجسم المغلقة (الأيدي المكتوفة، النظر باستمرار إلى الأرض، الظهر المنحني للأمام، فيما يشبه التقوقع على الذات)، فإن ذلك يحفز إفراز (هرمون الكورتيزول)، وهو الهرمون المسؤول عن الشعور بالتعب والجهاد والخوف، الأمر الذي يقود إلى توليد الشعور بضعف الثقة بالنفس.
-
+* وعلى العكس من ذلك تمامًا عندما يتبنى الشخص وضعية أو هيئة الجسم المغلقة (الأيدي المكتوفة، النظر باستمرار إلى الأرض، الظهر المنحني للأمام، فيما يشبه التقوقع على الذات)، فإن ذلك يحفز إفراز (هرمون الكورتيزول), وهو الهرمون المسؤول عن الشعور بالتعب والجهاد والخوف، الأمر الذي يقود إلى توليد الشعور بضعف الثقة بالنفس.
+''',
+                      style: TextStyle(
+                        fontFamily: 'Amiri',
+                        fontSize: _fontSize,
+                        height: 1.6,
+                        color: Colors.black87,
+                      ),
+                      textAlign: TextAlign.justify,
+                    ),
+                    const SizedBox(height: 10),
+                    // الإعلان الأول
+                    if (_isNativeAd1Loaded && _nativeAd1 != null)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 10.0),
+                        child: Container(
+                          height: 100,
+                          child: AdWidget(ad: _nativeAd1!),
+                        ),
+                      ),
+                    
+                    const SizedBox(height: 20),
+                    Text(
+                      '''
 ---
 ### 2. قواعد وتقنيات المحادثة
 * قيادة المحادثة بالمديح والإطراء: في لقاء التعارف والمراحل المبكرة من التعارف يقدم الشاب عبارات الثناء والمجاملة مثل: (لديكِ دراية كافية حول الموضوع، ثقافتكِ تبدو واسعة، لديكِ أفكار رائعة، نظرتكِ للأمور واقعية، ذاكرتكِ تبدو قوية، تبدين فتاة طموحة، تبدين ظريفة وخفيفة الدم، لديكِ روح مرحة..... إلخ). دون التطرق للغزل والذي هو عبارة عن مدح مفاتن الجسم وملامحه مثل: (عيونكِ رائعة، ابتسامتكِ جذابة، شعركِ ناعم وجميل)، فمازال الوقت مبكرًا لذلك، ويمكن أن تستجيب له بعض الفتيات بصورة سلبية، في هذه المرحلة المبكرة من التعارف.
@@ -262,8 +417,7 @@ class _BuildAttractionPageState extends State<BuildAttractionPage> {
         * أنت تجيب: بالطبع، أنا أقرأ روايات كثير من الأدباء خصوصًا روايات أجاثا كريستي، هل سبق لكِ أن قرأتِ شيئًا من رواياتها؟
     * تقنية التخمين: (التخمين يدفع الشخص الآخر لتأكيد اعتقادك أو نفيه أو تصحيحه).
         * أنت تقول لها: أعتقد أن الخبرات التي كونتها في دورة التأهيل في الخارج ستعود بفائدة عظيمة وحاسمة لأجل مستقبلكِ المهني، أليس كذلك؟
-''' // Corrected: Closing the second multiline string here
-                      ,
+''',
                       style: TextStyle(
                         fontFamily: 'Amiri',
                         fontSize: _fontSize,
@@ -272,6 +426,16 @@ class _BuildAttractionPageState extends State<BuildAttractionPage> {
                       ),
                       textAlign: TextAlign.justify,
                     ),
+                    const SizedBox(height: 10),
+                    // الإعلان الثاني
+                    if (_isNativeAd2Loaded && _nativeAd2 != null)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 10.0),
+                        child: Container(
+                          height: 100,
+                          child: AdWidget(ad: _nativeAd2!),
+                        ),
+                      ),
                   ],
                 ),
               ),
@@ -279,9 +443,7 @@ class _BuildAttractionPageState extends State<BuildAttractionPage> {
           ],
         ),
       ),
-      // --- Ad banner added here ---
-      bottomNavigationBar: BannerAdWidget(),
-      // ----------------------------
+      bottomNavigationBar: const BannerAdWidget(),
     );
   }
 }

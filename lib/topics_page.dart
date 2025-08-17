@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+ import 'package:flutter/material.dart';
 import '../services/api_service.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart'; // Import the ad package
 import 'main.dart'; // تأكد من وجود BannerAdWidget هنا
@@ -62,6 +62,7 @@ class TopicsPage extends StatefulWidget {
 class _TopicsPageState extends State<TopicsPage> {
   InterstitialAd? _interstitialAd;
   bool _isAdLoaded = false;
+  int _clickCount = 0; // Added click counter
 
   final String _adUnitId = 'ca-app-pub-8081293973220877/1489894188'; // Test Ad Unit ID for Android Interstitial.
   // Replace with your actual AdMob Interstitial Ad Unit ID
@@ -161,7 +162,8 @@ class _TopicsPageState extends State<TopicsPage> {
   }
 
   void _showInterstitialAd(BuildContext context, WidgetBuilder pageBuilder) {
-    if (_interstitialAd != null && _isAdLoaded) {
+    _clickCount++;
+    if (_clickCount % 3 == 0 && _interstitialAd != null && _isAdLoaded) {
       _interstitialAd!.fullScreenContentCallback = FullScreenContentCallback(
         onAdShowedFullScreenContent: (InterstitialAd ad) {
           debugPrint('$ad onAdShowedFullScreenContent.');
@@ -184,10 +186,10 @@ class _TopicsPageState extends State<TopicsPage> {
         },
       );
       _interstitialAd!.show();
+      _clickCount = 0; // Reset the counter after showing the ad
     } else {
-      debugPrint('Ad not loaded, navigating directly.');
+      debugPrint('Ad not shown, navigating directly. Click count: $_clickCount');
       Navigator.push(context, MaterialPageRoute(builder: pageBuilder));
-      _loadInterstitialAd(); // Try to load an ad for next time even if current one isn't ready
     }
   }
 

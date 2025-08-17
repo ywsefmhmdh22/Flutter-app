@@ -1,5 +1,79 @@
 import 'package:flutter/material.dart';
-import 'package:maharat_jazb_alnisa/main.dart';// تأكد من أن BannerAdWidget معرف هنا
+import 'package:google_mobile_ads/google_mobile_ads.dart';
+import 'package:maharat_jazb_alnisa/main.dart';
+
+// --- هنا تم استبدال الكود بـ BannerAdWidget الفعلي والمعدل ---
+class BannerAdWidget extends StatefulWidget {
+  const BannerAdWidget({super.key});
+
+  @override
+  State<BannerAdWidget> createState() => _BannerAdWidgetState();
+}
+
+class _BannerAdWidgetState extends State<BannerAdWidget> {
+  BannerAd? _bannerAd;
+  bool _isAdLoaded = false;
+  final String _adUnitId = 'ca-app-pub-8081293973220877/5841556409'; // غير هذا بـ Ad Unit ID الخاص بإعلان البانر
+
+  @override
+  void initState() {
+    super.initState();
+    _loadBannerAd();
+  }
+
+  void _loadBannerAd() async {
+    // *هذا هو الجزء الذي تم تعديله*
+    // نستخدم getAnchoredAdaptiveBannerAdSize لحساب حجم الإعلان التكيفي
+    final AdSize? size = await AdSize.getAnchoredAdaptiveBannerAdSize(
+      MediaQuery.of(context).orientation,
+      MediaQuery.of(context).size.width.truncate(),
+    );
+
+    if (size == null) {
+      debugPrint('Unable to get adaptive banner size.');
+      return;
+    }
+
+    _bannerAd = BannerAd(
+      adUnitId: _adUnitId,
+      request: const AdRequest(),
+      size: size,
+      listener: BannerAdListener(
+        onAdLoaded: (ad) {
+          debugPrint('BannerAd loaded.');
+          setState(() {
+            _isAdLoaded = true;
+          });
+        },
+        onAdFailedToLoad: (ad, err) {
+          debugPrint('BannerAd failed to load: $err');
+          ad.dispose();
+        },
+      ),
+    );
+    _bannerAd!.load();
+  }
+
+  @override
+  void dispose() {
+    _bannerAd?.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_isAdLoaded && _bannerAd != null) {
+      return SizedBox(
+        width: _bannerAd!.size.width.toDouble(),
+        height: _bannerAd!.size.height.toDouble(),
+        child: AdWidget(ad: _bannerAd!),
+      );
+    } else {
+      return const SizedBox.shrink();
+    }
+  }
+}
+// ----------------------------------------------------
 
 class DeepenAttachmentPage extends StatefulWidget {
   const DeepenAttachmentPage({super.key});
@@ -10,6 +84,44 @@ class DeepenAttachmentPage extends StatefulWidget {
 
 class _DeepenAttachmentPageState extends State<DeepenAttachmentPage> {
   double _fontSize = 16.0;
+
+  NativeAd? _nativeAd;
+  bool _isNativeAdLoaded = false;
+  final String _adUnitId = 'ca-app-pub-8081293973220877/5104529502';
+
+  @override
+  void initState() {
+    super.initState();
+    _loadNativeAd();
+  }
+
+  @override
+  void dispose() {
+    _nativeAd?.dispose();
+    super.dispose();
+  }
+
+  void _loadNativeAd() {
+    _nativeAd = NativeAd(
+      adUnitId: _adUnitId,
+      factoryId: 'listTile',
+      request: const AdRequest(),
+      listener: NativeAdListener(
+        onAdLoaded: (Ad ad) {
+          debugPrint('Native Ad loaded.');
+          setState(() {
+            _nativeAd = ad as NativeAd;
+            _isNativeAdLoaded = true;
+          });
+        },
+        onAdFailedToLoad: (Ad ad, LoadAdError error) {
+          debugPrint('Native Ad failed to load: $error');
+          ad.dispose();
+        },
+      ),
+    );
+    _nativeAd!.load();
+  }
 
   void _increaseFontSize() {
     setState(() {
@@ -25,91 +137,8 @@ class _DeepenAttachmentPageState extends State<DeepenAttachmentPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: PreferredSize(
-        preferredSize: Size.fromHeight(80.0),
-        child: AppBar(
-          backgroundColor: Colors.pink.shade100,
-          automaticallyImplyLeading: false,
-          flexibleSpace: SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Directionality(
-                        textDirection: TextDirection.ltr,
-                        child: IconButton(
-                          icon: const Icon(Icons.arrow_back, color: Colors.black87),
-                          onPressed: () {
-                            Navigator.pop(context);
-                          },
-                        ),
-                      ),
-                      Expanded(
-                        child: Text(
-                          'التعمق في بناء الارتباط العاطفي',
-                          style: TextStyle(
-                            fontFamily: 'Amiri',
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black87,
-                          ),
-                          textAlign: TextAlign.right,
-                          textDirection: TextDirection.rtl,
-                          maxLines: 2,
-                        ),
-                      ),
-                      const SizedBox(width: 10),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ),
-      body: Directionality(
-        textDirection: TextDirection.rtl,
-        child: Column(
-          children: [
-            Align(
-              alignment: Alignment.topLeft,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: Colors.pink.shade50,
-                    borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: Colors.pink.shade200),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      IconButton(
-                        icon: Icon(Icons.zoom_in, color: Colors.pink.shade700),
-                        onPressed: _increaseFontSize,
-                      ),
-                      IconButton(
-                        icon: Icon(Icons.zoom_out, color: Colors.pink.shade700),
-                        onPressed: _decreaseFontSize,
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-            Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(20.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      '''
+    // Content parts for ad insertion
+    const String part1 = '''
 التعمق في بناء الارتباط العاطفي لا يعني التخلي عن التقنيات التي تناولنا الحديث عنها في قسم بناء الارتباط العاطفي، بل هو استمرار لها مع إدخال تقنيات جديدة.
   
 1 :       الدخول في المواضيع الشخصية والعاطفية  
@@ -128,7 +157,9 @@ class _DeepenAttachmentPageState extends State<DeepenAttachmentPage> {
 ∞ ابتدئ بالمواضيع والقيم العامة وانتقل إلى المواضيع والقيم الشخصية.
 
 ∞ ابنِ الثقة بينكما: كلما أصبحت المحادثة شخصية وعاطفية كلما زادت الثقة، كلما زادت الثقة وكان التواصل مطولًا كلما كان الارتباط أعمق، وكلما أصبحت منفتحة عليك وكلما أصبحت جاهزة لمحادثة تليفونية معك.
+''';
 
+    const String part2 = '''
  2 :       إنشاء مقارنة بين تجربتكما حول الموضوع المطروح 
 
 الهدف من هذه العملية هو توليد مشاعر إيجابية مكثفة من الموضوع أو التجربة المطروحة أولًا، وثانيًا تكوين الأرضية المشتركة عبر هذه العاطفة التي ارتبطت بينكما. 
@@ -159,7 +190,9 @@ class _DeepenAttachmentPageState extends State<DeepenAttachmentPage> {
 مثال 2:
 
 هي تتحدث عن تجربتها مع مرض والدتها التي احتاجت إلى عملية جراحية، المشاكل والصعوبات التي واجهتها، وكيف كانت فرحتها بشفاء والدتها ونجاح العملية الجراحية التي خضعت لها، هي تتحدث عن تجربتها بمشاعر عميقة، وأنت تقول لها هنا: أستطيع أن أتفهم هذا الشعور، لقد مررت بنفس التجربة عندما كان أخي الأكبر مريضًا، عندما تعلقنا بين الأمل واليأس من شفائه، وقد غادر المشفى بصحة جيدة.
+''';
 
+    const String part3 = '''
 3 :       إحداث توافق وتتطابق في الرؤى والأمنيات 
 
 النساء عندهم تصور منذ الطفولة كيف يجب أن يكون شريك الحياة، عندما كانت تحلم بالفارس الشجاع الذي يخرجها من رتابة الحياة المملة، المرأة تتمنى أن تحصل على الشيء الذي لم تحصل عليه في حياتها، أنت يجب أن تعلم تصوراتها عن فارس الأحلام، ماذا تتوقع منه، وأن توافق ذلك من خلال تأكيد تعدد وجوه شخصيتك التي توافق هذه التصورات، هذا هو فن التسويق للذات. الكثير من النساء يشعرن بالتقيد، حاول أن تخرجها من القيد، حاول أن تحررها من خلال المحادثة، ابدأ مع المرأة بالحديث عن مواضيع مشاعر متنوعة، من خلالها اقرأ احتياجات المرأة ومثاليتها، تكلم عن الأشياء التي تحرك مشاعر المرأة، كالأمان والارتباط العاطفي مع الناس الآخرين والمهم ليس ما تقول المرأة، بل ماذا ينتقل إليك من مشاعر محددة، استرخِ ودعها تتكلم، ابحث بشكل عميق عن أمنياتها وأحلامها، يجب فقط أن تميز نحو ماذا تتطلع؟ هل تتشوق للرحلات أم لمنزل محمي مع الكثير من الأولاد؟ حيث تسمع صرير الأرجوحة.
@@ -309,7 +342,127 @@ class _DeepenAttachmentPageState extends State<DeepenAttachmentPage> {
 الحصان: وهو شريك حياتكِ واختياركِ لهُ يعني أنكِ ستركضين لشريك حياتكِ لتجدي عنده الراحة والأمان والحلول لكل المعضلات.
 
 [بالطبع هذا الاختبار يكون مرحًا ومسليًّا، إذا ما تمّ التمرّن عليه وحفظه عن ظهر قلب، طباعته على الورق،  واستعراضه  أمام  الفتاة،  تفقد  الاختبار  متعته،  ولا  أنصح  بذلك أبدًا].
-''',
+''';
+    return Scaffold(
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(80.0),
+        child: AppBar(
+          backgroundColor: Colors.pink.shade100,
+          automaticallyImplyLeading: false,
+          flexibleSpace: SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Directionality(
+                        textDirection: TextDirection.ltr,
+                        child: IconButton(
+                          icon: const Icon(Icons.arrow_back, color: Colors.black87),
+                          onPressed: () {
+                            Navigator.pop(context);
+                          },
+                        ),
+                      ),
+                      Expanded(
+                        child: Text(
+                          'التعمق في بناء الارتباط العاطفي',
+                          style: TextStyle(
+                            fontFamily: 'Amiri',
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black87,
+                          ),
+                          textAlign: TextAlign.right,
+                          textDirection: TextDirection.rtl,
+                          maxLines: 2,
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+      body: Directionality(
+        textDirection: TextDirection.rtl,
+        child: Column(
+          children: [
+            Align(
+              alignment: Alignment.topLeft,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.pink.shade50,
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: Colors.pink.shade200),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      IconButton(
+                        icon: Icon(Icons.zoom_in, color: Colors.pink.shade700),
+                        onPressed: _increaseFontSize,
+                      ),
+                      IconButton(
+                        icon: Icon(Icons.zoom_out, color: Colors.pink.shade700),
+                        onPressed: _decreaseFontSize,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(20.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      part1,
+                      style: TextStyle(
+                        fontFamily: 'Amiri',
+                        fontSize: _fontSize,
+                        height: 1.6,
+                        color: Colors.black87,
+                      ),
+                      textAlign: TextAlign.justify,
+                    ),
+                    Text(
+                      part2,
+                      style: TextStyle(
+                        fontFamily: 'Amiri',
+                        fontSize: _fontSize,
+                        height: 1.6,
+                        color: Colors.black87,
+                      ),
+                      textAlign: TextAlign.justify,
+                    ),
+                    // Start of Native Ad
+                    if (_isNativeAdLoaded && _nativeAd != null)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 20.0),
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: Colors.pink.shade50,
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(color: Colors.pink.shade200),
+                          ),
+                          height: 100, // Adjust height as needed
+                          child: AdWidget(ad: _nativeAd!),
+                        ),
+                      ),
+                    // End of Native Ad
+                    Text(
+                      part3,
                       style: TextStyle(
                         fontFamily: 'Amiri',
                         fontSize: _fontSize,

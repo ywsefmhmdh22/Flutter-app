@@ -14,23 +14,23 @@ class PDFBookPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.white, // لون الخلفية أبيض
-        elevation: 0, // إزالة أي ظل
+        backgroundColor: Colors.white,
+        elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black), // سهم الرجوع للخلف بلون أسود ليكون مرئيا على الخلفية البيضاء
+          icon: const Icon(Icons.arrow_back, color: Colors.black),
           onPressed: () {
-            Navigator.pop(context); // للرجوع للصفحة السابقة
+            Navigator.pop(context);
           },
         ),
         title: const Text(
-          'الكتاب pdf', // تم تعديل ترتيب الكلمات هنا
-          textDirection: TextDirection.rtl, // لضمان عرض النص من اليمين لليسار
+          'الكتاب pdf',
+          textDirection: TextDirection.rtl,
           style: TextStyle(
             color: Colors.black,
-            fontWeight: FontWeight.bold, // يمكنك إضافة تنسيقات أخرى إذا أردت
+            fontWeight: FontWeight.bold,
           ),
         ),
-        centerTitle: true, // لتركيز العنوان في المنتصف
+        centerTitle: true,
       ),
       body: Stack(
         children: [
@@ -42,56 +42,56 @@ class PDFBookPage extends StatelessWidget {
             ),
           ),
 
-          // لتجميع الأزرار وتثبيتها عموديًا
+          // الأزرار
           Column(
-            mainAxisAlignment: MainAxisAlignment.center, // لتوسيط الأزرار عموديا
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              // Spacer لرفع الأزرار للأعلى بمقدار 1 ملم
-              const Spacer(flex: 120), // تم زيادة الـ flex لرفع الأزرار أكثر
+              const Spacer(flex: 120),
 
-              // الزر الأول: الجزء الأول
+              // الزر الأول
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 18.0, vertical: 7), // إضافة مسافة أفقية وعمودية
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 18.0, vertical: 7),
                 child: buildButton(context, 'pdf الجزء الأول', 1, 168),
               ),
 
-              // الزر الثاني: الجزء الثاني
+              // الزر الثاني
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 18.0, vertical: 7), // إضافة مسافة أفقية وعمودية
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 18.0, vertical: 7),
                 child: buildButton(context, ' pdf الجزء الثاني', 169, 250),
               ),
-              const Spacer(flex: 99), // تم تقليل الـ flex لجعل الأزرار أعلى
+              const Spacer(flex: 99),
             ],
           ),
         ],
       ),
-      bottomNavigationBar: BannerAdWidget(),
+      bottomNavigationBar: BannerAdWidget(), // إعلان البنر هنا
     );
   }
 
-  Widget buildButton(BuildContext context, String text, int startPage, int endPage) {
-    return SizedBox( // تم إضافة SizedBox للتحكم في عرض الزر
-      height: 50, // تم تحديد ارتفاع ثابت للأزرار
+  Widget buildButton(
+      BuildContext context, String text, int startPage, int endPage) {
+    return SizedBox(
+      height: 50,
       child: ElevatedButton(
         style: ElevatedButton.styleFrom(
           backgroundColor: Colors.white,
-          padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 10), // تم تصغير الـ padding
+          padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 10),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10), // تم تصغير الـ border radius قليلاً
+            borderRadius: BorderRadius.circular(10),
           ),
           side: const BorderSide(color: Colors.blue),
           elevation: 3,
         ),
-        onPressed: () async { // جعل onPressed دالة غير متزامنة
+        onPressed: () async {
           var connectivityResult = await (Connectivity().checkConnectivity());
           if (connectivityResult.contains(ConnectivityResult.none)) {
-            // لا يوجد اتصال بالإنترنت
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
                   content: Text('لا يوجد اتصال بالإنترنت. يرجى التحقق من اتصالك.')),
             );
           } else {
-            // يوجد اتصال بالإنترنت، يمكن الانتقال للصفحة
             Navigator.push(
               context,
               MaterialPageRoute(
@@ -104,15 +104,15 @@ class PDFBookPage extends StatelessWidget {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Icon(Icons.arrow_back_ios, color: Colors.blue, size: 18), // تم تصغير حجم الأيقونة
+            const Icon(Icons.arrow_back_ios, color: Colors.blue, size: 18),
             Expanded(
               child: Text(
                 text,
                 textAlign: TextAlign.center,
-                style: const TextStyle(color: Colors.blue, fontSize: 15), // تم تصغير حجم الخط
+                style: const TextStyle(color: Colors.blue, fontSize: 15),
               ),
             ),
-            const Icon(Icons.picture_as_pdf, color: Colors.blue, size: 18), // تم تصغير حجم الأيقونة
+            const Icon(Icons.picture_as_pdf, color: Colors.blue, size: 18),
           ],
         ),
       ),
@@ -157,7 +157,7 @@ class _PDFViewerPageState extends State<PDFViewerPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('PDF'), // تم تعديل العنوان هنا
+        title: const Text('PDF'),
         centerTitle: true,
         automaticallyImplyLeading: true,
       ),
@@ -183,6 +183,7 @@ class _PDFViewerPageState extends State<PDFViewerPage> {
                 }
               },
             ),
+      bottomNavigationBar: BannerAdWidget(), // إعلان البنر هنا أيضًا
     );
   }
 }

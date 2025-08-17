@@ -3,7 +3,7 @@ import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:in_app_review/in_app_review.dart'; // سأستخدم InAppReview أيضًا للتحقق
+import 'package:in_app_review/in_app_review.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'main.dart';
@@ -37,8 +37,6 @@ class _SectionsPageState extends State<SectionsPage> {
     super.initState();
     _loadInterstitialAd();
     _loadClickCount();
-    // تم تغيير هذا: سيتم استدعاء _showReviewPopup() مباشرة بدون أي شروط هنا
-    // سنقوم بإدارة منطق الظهور داخل الدالة نفسها.
     _showReviewPopup();
   }
 
@@ -54,80 +52,125 @@ class _SectionsPageState extends State<SectionsPage> {
     await prefs.setInt('clickCount', count);
   }
 
-  // تم تعديل هذه الدالة لإزالة التحقق من hasShownReviewThisSession
   void _showReviewPopup() async {
-    // يمكن إضافة تأخير بسيط هنا لضمان أن الواجهة قد تم بناؤها
     Future.delayed(const Duration(milliseconds: 500), () {
       showDialog(
         context: context,
-        barrierDismissible: false, // يمنع إغلاق النافذة بالنقر خارجها
+        barrierDismissible: false,
         builder: (BuildContext context) {
-          return AlertDialog(
+          // بداية التعديل على تصميم النافذة
+          return Dialog(
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(15),
+              borderRadius: BorderRadius.circular(20),
             ),
-            title: const Center(
-              child: Text(
-                'تقييم التطبيق',
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  color: Colors.deepPurple,
+            elevation: 10,
+            backgroundColor: Colors.white,
+            child: Container(
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(20),
+                gradient: const LinearGradient(
+                  colors: [Color(0xFFF8E8F9), Colors.white],
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
                 ),
-              ),
-            ),
-            content: const Text(
-              'إذا أعجبك التطبيق، نرجو تقييمنا بخمسة نجوم لدعمنا.', // تم تغييرها إلى 5 نجوم
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 16,
-                color: Colors.black87,
-              ),
-            ),
-            actionsAlignment: MainAxisAlignment.spaceEvenly,
-            actions: <Widget>[
-              TextButton(
-                onPressed: () async {
-                  Navigator.of(context).pop(); // إغلاق النافذة
-                  const url = 'https://play.google.com/store/apps/details?id=com.tla.bookapp';
-                  if (await canLaunchUrl(Uri.parse(url))) {
-                    await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
-                  } else {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('تعذر فتح رابط التقييم')),
-                    );
-                  }
-                },
-                style: TextButton.styleFrom(
-                  foregroundColor: Colors.white,
-                  backgroundColor: Colors.blueAccent,
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.grey.withOpacity(0.2),
+                    spreadRadius: 3,
+                    blurRadius: 7,
+                    offset: const Offset(0, 3),
                   ),
-                ),
-                child: const Text(
-                  'تقييم الآن',
-                  style: TextStyle(fontSize: 16),
-                ),
+                ],
               ),
-              TextButton(
-                onPressed: () {
-                  Navigator.of(context).pop(); // إغلاق النافذة
-                },
-                style: TextButton.styleFrom(
-                  foregroundColor: Colors.deepPurple,
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                    side: const BorderSide(color: Colors.deepPurple),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // تم تعديل هذا الجزء لعرض 5 نجوم بدلاً من نجمة واحدة
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: List.generate(
+                      5,
+                      (index) => const Icon(
+                        Icons.star_rate_rounded,
+                        color: Color(0xFFF1C40F),
+                        size: 40,
+                      ),
+                    ),
                   ),
-                ),
-                child: const Text(
-                  'ليس الآن',
-                  style: TextStyle(fontSize: 16),
-                ),
+                  const SizedBox(height: 16),
+                  const Text(
+                    'تقييم التطبيق',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 22,
+                      color: Color(0xFF4B0082),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  const Text(
+                    'إذا أعجبك التطبيق، نرجو دعمنا بخمس نجوم.',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: Colors.black87,
+                      height: 1.5,
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: <Widget>[
+                      // زر "ليس الآن" على اليمين
+                      TextButton(
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                        },
+                        style: TextButton.styleFrom(
+                          foregroundColor: const Color(0xFF4B0082),
+                          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            side: const BorderSide(color: Color(0xFF4B0082), width: 1.5),
+                          ),
+                        ),
+                        child: const Text(
+                          'ليس الآن',
+                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                      // زر "تقييم" على اليسار
+                      ElevatedButton(
+                        onPressed: () async {
+                          Navigator.of(context).pop();
+                          const url = 'https://play.google.com/store/apps/details?id=com.tla.bookapp';
+                          if (await canLaunchUrl(Uri.parse(url))) {
+                            await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
+                          } else {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('تعذر فتح رابط التقييم')),
+                            );
+                          }
+                        },
+                        style: ElevatedButton.styleFrom(
+                          foregroundColor: Colors.white,
+                          backgroundColor: const Color(0xFFF1C40F),
+                          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          elevation: 5,
+                        ),
+                        child: const Text(
+                          'تقييم',
+                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
               ),
-            ],
+            ),
           );
         },
       );
@@ -299,7 +342,7 @@ class _SectionsPageState extends State<SectionsPage> {
                             text: 'مشاركة التطبيق',
                             icon: Icons.share,
                             onTap: () => Share.share(
-                                'حمّل تطبيق مهارات جذب النساء من هنا: https://yourapp.link'),
+                                'حمّل تطبيق مهارات جذب النساء من هنا: https://play.google.com/store/apps/details?id=com.tla.bookapp'),
                             isIconTrailing: true,
                           ),
                         ),

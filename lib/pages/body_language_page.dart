@@ -1,13 +1,162 @@
 import 'package:flutter/material.dart';
-import 'package:maharat_jazb_alnisa/main.dart';// Make sure BannerAdWidget is defined here
+import 'package:google_mobile_ads/google_mobile_ads.dart';
+import 'package:maharat_jazb_alnisa/main.dart'; // تأكد من وجود BannerAdWidget هنا
 
-class BodyLanguagePage extends StatefulWidget { // Updated class name
+// --- هذا هو الكود الفعلي لـ BannerAdWidget المُعدّل ---
+class BannerAdWidget extends StatefulWidget {
+  const BannerAdWidget({super.key});
+
   @override
-  _BodyLanguagePageState createState() => _BodyLanguagePageState(); // Updated state class name
+  State<BannerAdWidget> createState() => _BannerAdWidgetState();
+}
+
+class _BannerAdWidgetState extends State<BannerAdWidget> {
+  BannerAd? _bannerAd;
+  bool _isAdLoaded = false;
+  final String _adUnitId = 'ca-app-pub-8081293973220877/5841556409'; // غير هذا بـ Ad Unit ID الخاص بإعلان البانر
+
+  @override
+  void initState() {
+    super.initState();
+    _loadBannerAd();
+  }
+
+  void _loadBannerAd() async {
+    // *هذا هو الجزء الذي تم تعديله*
+    // نستخدم getAnchoredAdaptiveBannerAdSize لحساب حجم الإعلان التكيفي
+    final AdSize? size = await AdSize.getAnchoredAdaptiveBannerAdSize(
+      MediaQuery.of(context).orientation,
+      MediaQuery.of(context).size.width.truncate(),
+    );
+
+    if (size == null) {
+      debugPrint('Unable to get adaptive banner size.');
+      return;
+    }
+
+    _bannerAd = BannerAd(
+      adUnitId: _adUnitId,
+      request: const AdRequest(),
+      size: size,
+      listener: BannerAdListener(
+        onAdLoaded: (ad) {
+          debugPrint('BannerAd loaded.');
+          setState(() {
+            _isAdLoaded = true;
+          });
+        },
+        onAdFailedToLoad: (ad, err) {
+          debugPrint('BannerAd failed to load: $err');
+          ad.dispose();
+        },
+      ),
+    );
+    _bannerAd!.load();
+  }
+
+  @override
+  void dispose() {
+    _bannerAd?.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_isAdLoaded && _bannerAd != null) {
+      return SizedBox(
+        width: _bannerAd!.size.width.toDouble(),
+        height: _bannerAd!.size.height.toDouble(),
+        child: AdWidget(ad: _bannerAd!),
+      );
+    } else {
+      return const SizedBox.shrink();
+    }
+  }
+}
+// ------------------------------------------
+
+class BodyLanguagePage extends StatefulWidget {
+  @override
+  _BodyLanguagePageState createState() => _BodyLanguagePageState();
 }
 
 class _BodyLanguagePageState extends State<BodyLanguagePage> {
   double _fontSize = 16.0;
+
+  // تعريف الإعلانات المدمجة
+  NativeAd? _nativeAd1;
+  NativeAd? _nativeAd2;
+  NativeAd? _nativeAd3;
+
+  bool _isNativeAd1Loaded = false;
+  bool _isNativeAd2Loaded = false;
+  bool _isNativeAd3Loaded = false;
+
+  final String adUnitId = 'ca-app-pub-8081293973220877/5104529502';
+
+  @override
+  void initState() {
+    super.initState();
+    // تحميل الإعلانات المدمجة عند تهيئة الصفحة
+    _loadNativeAd1();
+    _loadNativeAd2();
+    _loadNativeAd3();
+  }
+
+  // دوال لتحميل الإعلانات المدمجة
+  void _loadNativeAd1() {
+    _nativeAd1 = NativeAd(
+      adUnitId: adUnitId,
+      factoryId: 'listTile',
+      request: const AdRequest(),
+      listener: NativeAdListener(
+        onAdLoaded: (ad) {
+          setState(() {
+            _isNativeAd1Loaded = true;
+          });
+        },
+        onAdFailedToLoad: (ad, error) {
+          _nativeAd1?.dispose();
+        },
+      ),
+    )..load();
+  }
+
+  void _loadNativeAd2() {
+    _nativeAd2 = NativeAd(
+      adUnitId: adUnitId,
+      factoryId: 'listTile',
+      request: const AdRequest(),
+      listener: NativeAdListener(
+        onAdLoaded: (ad) {
+          setState(() {
+            _isNativeAd2Loaded = true;
+          });
+        },
+        onAdFailedToLoad: (ad, error) {
+          _nativeAd2?.dispose();
+        },
+      ),
+    )..load();
+  }
+
+  void _loadNativeAd3() {
+    _nativeAd3 = NativeAd(
+      adUnitId: adUnitId,
+      factoryId: 'listTile',
+      request: const AdRequest(),
+      listener: NativeAdListener(
+        onAdLoaded: (ad) {
+          setState(() {
+            _isNativeAd3Loaded = true;
+          });
+        },
+        onAdFailedToLoad: (ad, error) {
+          _nativeAd3?.dispose();
+        },
+      ),
+    )..load();
+  }
 
   void _increaseFontSize() {
     setState(() {
@@ -19,6 +168,14 @@ class _BodyLanguagePageState extends State<BodyLanguagePage> {
     setState(() {
       _fontSize = _fontSize - 2.0 > 12.0 ? _fontSize - 2.0 : 12.0;
     });
+  }
+
+  @override
+  void dispose() {
+    _nativeAd1?.dispose();
+    _nativeAd2?.dispose();
+    _nativeAd3?.dispose();
+    super.dispose();
   }
 
   @override
@@ -128,6 +285,17 @@ class _BodyLanguagePageState extends State<BodyLanguagePage> {
                       ),
                       textAlign: TextAlign.justify,
                     ),
+                    const SizedBox(height: 10),
+                    // الإعلان الأول
+                    if (_isNativeAd1Loaded && _nativeAd1 != null)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 10.0),
+                        child: Container(
+                          height: 100,
+                          child: AdWidget(ad: _nativeAd1!),
+                        ),
+                      ),
+                    
                     const SizedBox(height: 20),
                     Text(
                       '''
@@ -135,7 +303,7 @@ class _BodyLanguagePageState extends State<BodyLanguagePage> {
 
 يمكن للمرء في منتهى البساطة أن يتعلم لغة الجسد، وكل ما عليه فعله هو أن يتمرن على الأوضاع المختلفة للجسد والحالة الشعورية التي يمثلها كل وضع، بعد ذلك يكون من السهل التعرف على مشاعر الآخرين عبر مراقبة لغة أجسادهم، علاوة على ذلك يصبح من السهل عليه إعطاء الانطباع الذي يريده من خلال التحكم بلغة جسده، فمثلا إذا كنت تريد أن تشعر فتاة ما بأنك تحبها، فيجب أن تجسد لغة جسدك ذلك الحال، وستشعر هي تلقائيًّا أنك قد وقعت في حبها. المهم هنا هو أن تستفيد من استخدم لغة الجسد الإيجابية في جذب اهتمام المرأة، وإعطائها انطباعًا إيجابيًّا عنك وأن تتخلص من لغة الجسد السلبية، والتي تولد انطباعًا سلبيًّا عنك، وهذا سيجعل تواجدك مع النساء أكثر قبولًا وأريحية، وكذلك ستصبح أكثر قدرة على إقناعهنَّ بمشاعرك، فعندما تغير لغة جسدك للأفضل، ثق تمامًا أن النساء سوف تتعامل معك بطريقة أفضل، وسيكون تجاوبهنَّ معك أفضل. أنت الآن تعرفت على لغة الجسد وعرفت أن الفتيات قادرات على قراءتها بشكل فطري، فاحرص على أن لا تبدي لغة جسدك أشياء تؤثر عليك، معرفتك للغة الجسد تمكنك من معرفة وفهم الظروف والحالة النفسية التي تمر بها الفتاة وتقدير وضعها، كما أنها تكون فرصة لفتح حوار ناجح، فعندما تدلك لغة جسد الفتاة أنها تنتظر بقلق، يمكنك فتح حديث عن الانتظار وسيكون شيقًا بدلًا من أن تفتح حديثًا عن أشياء أخرى لا أهمية لها في هذه اللحظة بالنسبة لها.
 
-اربط استخدام لغة جسدك الإيجابية في جميع المواقف مع لغتك اللفظية للتأثير عليها بصورة أفضل، فإذا كنت تهنئها بالنجاح في الامتحانات فأظهر الفرح لها في تعابير وجهك ولغة جسدك لتنقل لها شعورًا إيجابيًّا مضاعفًا.
+اربط استخدم لغة جسدك الإيجابية في جميع المواقف مع لغتك اللفظية للتأثير عليها بصورة أفضل، فإذا كنت تهنئها بالنجاح في الامتحانات فأظهر الفرح لها في تعابير وجهك ولغة جسدك لتنقل لها شعورًا إيجابيًّا مضاعفًا.
 ''',
                       style: TextStyle(
                         fontFamily: 'Amiri',
@@ -211,7 +379,7 @@ class _BodyLanguagePageState extends State<BodyLanguagePage> {
                     const SizedBox(height: 20),
                     Text(
                       '''
-تقوم بمداعبة شعرها وإعادة تصفيفه بأصابعها، وربما تقوم بتحريك شعرها إلى الوراء بإحدى يديها أو كلتيهما بطريقة مغرية تظهر بها جزءًا من رقيتها
+تقوم بمداعبة شعرها وإعادة تصفيفه بأصابعها، وربما تقوم بتحريك شعرها إلى الوراء بإحدى يديها أو كلتيهما بطريقة مغرية تظهر بها جزءًا من رقبتها.
 ''',
                       style: TextStyle(
                         fontFamily: 'Amiri',
@@ -257,6 +425,16 @@ class _BodyLanguagePageState extends State<BodyLanguagePage> {
                     // هنا ضع الصورة السادسة
                     Image.asset('assets/image6.jpg'), // استبدل 'assets/image6.jpg' بمسار صورتك الحقيقي
                     const SizedBox(height: 20),
+                    // الإعلان الثاني
+                    if (_isNativeAd2Loaded && _nativeAd2 != null)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 10.0),
+                        child: Container(
+                          height: 100,
+                          child: AdWidget(ad: _nativeAd2!),
+                        ),
+                      ),
+                    
                     Text(
                       '''
 تقوم بلمس الرجل محط إعجابها بشكل متكرر وعفوي وربما يكون بشكل مقصود مع تصاعد في مستوى اللمسات وغالبا ما تقوم بلمس يده أو ذراعه أو كتفه أو خده، كما تقوم بإعادة تسوية هندامه، وإزالة غبار وهمي عن كتفه.
@@ -421,6 +599,16 @@ class _BodyLanguagePageState extends State<BodyLanguagePage> {
                       textAlign: TextAlign.justify,
                     ),
                     const SizedBox(height: 20),
+                    // الإعلان الثالث
+                    if (_isNativeAd3Loaded && _nativeAd3 != null)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 10.0),
+                        child: Container(
+                          height: 100,
+                          child: AdWidget(ad: _nativeAd3!),
+                        ),
+                      ),
+                    
                     Text(
                       '''
 ---

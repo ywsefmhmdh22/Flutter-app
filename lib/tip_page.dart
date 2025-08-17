@@ -37,7 +37,6 @@ class _TipsPageState extends State<TipsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // تم إزالة extendBodyBehindAppBar: true
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
@@ -89,28 +88,28 @@ class _TipsPageState extends State<TipsPage> {
                       mainAxisSize: MainAxisSize.min, // عشان الـ Row مياخدش عرض الشاشة كله
                       children: [
                         GestureDetector(
-                          onTap: _increaseFontSize,
+                          onTap: _decreaseFontSize, // استدعاء دالة تصغير الخط
                           child: Container(
-                            width: 30,
-                            height: 30,
+                            width: 35, // حجم أكبر
+                            height: 35, // حجم أكبر
                             decoration: BoxDecoration(
                               color: Colors.white.withOpacity(0.3),
                               borderRadius: BorderRadius.circular(5),
                             ),
-                            child: const Icon(Icons.add, color: Colors.white, size: 20),
+                            child: const Icon(Icons.remove, color: Colors.white, size: 25), // أيقونة الناقص
                           ),
                         ),
                         const SizedBox(width: 8),
                         GestureDetector(
-                          onTap: _decreaseFontSize,
+                          onTap: _increaseFontSize, // استدعاء دالة تكبير الخط
                           child: Container(
-                            width: 30,
-                            height: 30,
+                            width: 35, // حجم أكبر
+                            height: 35, // حجم أكبر
                             decoration: BoxDecoration(
                               color: Colors.white.withOpacity(0.3),
                               borderRadius: BorderRadius.circular(5),
                             ),
-                            child: const Icon(Icons.remove, color: Colors.white, size: 20),
+                            child: const Icon(Icons.add, color: Colors.white, size: 25), // أيقونة الزائد
                           ),
                         ),
                       ],
@@ -118,80 +117,81 @@ class _TipsPageState extends State<TipsPage> {
                   ),
                 ),
               ),
-              ),
-              // هنا بنحط محتوى الصفحة الرئيسي اللي هو الـ SingleChildScrollView
-              Expanded( // Expanded عشان ياخد باقي المساحة المتاحة
-                child: Directionality(
-                  textDirection: TextDirection.rtl,
-                  child: SingleChildScrollView(
-                    padding: const EdgeInsets.only( // تم تعديل الـ padding العلوي
-                      left: 25.0,
-                      right: 25.0,
-                      top: 16.0,
-                      bottom: 25.0,
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        const SizedBox(height: 40),
-                        ...List.generate(12, (index) {
-                          final tipNumber = index + 1;
-                          final title = 'نصيحة $tipNumber:';
-                          String description = '';
-                          switch (tipNumber) {
-                            case 1:
-                              description = 'اقرأ الكتاب ومقالات التطبيق بهدوء وتمعن';
-                              break;
-                            case 2:
-                              description = 'مارس التخيل أثناء القراءة، اقرأ فقرة وحاول أن تتخيل نفسك في الموقف.';
-                              break;
-                            case 3:
-                              description = 'اقرأ الكتاب ومقالات التطبيق أكثر من مرة، ففي كل مرة تقرأ تترسخ أشياء جديدة في ذهنك لم تنتبه إليها في قراءات سابقة.';
-                              break;
-                            case 4:
-                              description = 'حدد وأنت تقرأ الكتاب أو المقالات الأخطاء التي وقعت فيها أثناء تعارفك على الفتيات فيما سبق وما هي الطرق الصحيحة التي يجب أن تتبعها.';
-                              break;
-                            case 5:
-                              description = 'عُد إلى التطبيق كلما واجهتك مشكلة في التعارف والتعامل مع الفتيات، تأكد بأنك ستعرف الخطأ وستجد الحل.';
-                              break;
-                            case 6:
-                              description = 'عاود الرجوع إلى التطبيق كل فترة للاطلاع على كل جديد لدينا.';
-                              break;
-                            case 7:
-                              description = 'شارك في منتدى تبادل التجارب على تطبيقنا، هناك يمكنك أن تطرح المشاكل التي تواجهك مع الفتيات وتجد لها حلاً.';
-                              break;
-                            case 8:
-                              description = 'تواجد في الأماكن التي ترتادها النساء.';
-                              break;
-                            case 9:
-                              description = 'كن صبورًا وتجنب التسرع.';
-                              break;
-                            case 10:
-                              description = 'اختر فتاة من محيطك وضع خطة للتعرف عليها مستفيدًا من المهارات التي نقدمها لك.';
-                              break;
-                            case 11:
-                              description = 'لا تتردد في التواصل معنا وتقديم رأيك حول المواضيع والمقالات التي ترى ضرورة بأن نضيفها لتطبيقنا لإغناء التطبيق بكل ما هو مهم.';
-                              break;
-                            case 12:
-                              description = 'أخبرنا بالمشاكل التقنية التي تواجهك في استخدام التطبيق لنتمكن من إصلاحها.';
-                              break;
-                          }
-                          return FadeInUp(
-                            delay: Duration(milliseconds: 200 * (index + 1)),
-                            duration: const Duration(milliseconds: 600),
-                            child: _buildSimpleTip(title, description),
-                          );
-                        }),
-                        const SizedBox(height: 60),
-                      ],
-                    ),
+            ),
+            // هنا بنحط محتوى الصفحة الرئيسي اللي هو الـ SingleChildScrollView
+            Expanded( // Expanded عشان ياخد باقي المساحة المتاحة
+              child: Directionality(
+                textDirection: TextDirection.rtl,
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.only( // تم تعديل الـ padding العلوي
+                    left: 25.0,
+                    right: 25.0,
+                    top: 16.0,
+                    bottom: 25.0,
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      // هذا هو الـ SizedBox الذي تم تعديل ارتفاعه من 40 إلى 15
+                      const SizedBox(height: 15),
+                      ...List.generate(12, (index) {
+                        final tipNumber = index + 1;
+                        final title = 'نصيحة $tipNumber:';
+                        String description = '';
+                        switch (tipNumber) {
+                          case 1:
+                            description = 'اقرأ الكتاب ومقالات التطبيق بهدوء وتمعن';
+                            break;
+                          case 2:
+                            description = 'مارس التخيل أثناء القراءة، اقرأ فقرة وحاول أن تتخيل نفسك في الموقف.';
+                            break;
+                          case 3:
+                            description = 'اقرأ الكتاب ومقالات التطبيق أكثر من مرة، ففي كل مرة تقرأ تترسخ أشياء جديدة في ذهنك لم تنتبه إليها في قراءات سابقة.';
+                            break;
+                          case 4:
+                            description = 'حدد وأنت تقرأ الكتاب أو المقالات الأخطاء التي وقعت فيها أثناء تعارفك على الفتيات فيما سبق وما هي الطرق الصحيحة التي يجب أن تتبعها.';
+                            break;
+                          case 5:
+                            description = 'عُد إلى التطبيق كلما واجهتك مشكلة في التعارف والتعامل مع الفتيات، تأكد بأنك ستعرف الخطأ وستجد الحل.';
+                            break;
+                          case 6:
+                            description = 'عاود الرجوع إلى التطبيق كل فترة للاطلاع على كل جديد لدينا.';
+                            break;
+                          case 7:
+                            description = 'شارك في منتدى تبادل التجارب على تطبيقنا، هناك يمكنك أن تطرح المشاكل التي تواجهك مع الفتيات وتجد لها حلاً.';
+                            break;
+                          case 8:
+                            description = 'تواجد في الأماكن التي ترتادها النساء.';
+                            break;
+                          case 9:
+                            description = 'كن صبورًا وتجنب التسرع.';
+                            break;
+                          case 10:
+                            description = 'اختر فتاة من محيطك وضع خطة للتعرف عليها مستفيدًا من المهارات التي نقدمها لك.';
+                            break;
+                          case 11:
+                            description = 'لا تتردد في التواصل معنا وتقديم رأيك حول المواضيع والمقالات التي ترى ضرورة بأن نضيفها لتطبيقنا لإغناء التطبيق بكل ما هو مهم.';
+                            break;
+                          case 12:
+                            description = 'أخبرنا بالمشاكل التقنية التي تواجهك في استخدام التطبيق لنتمكن من إصلاحها.';
+                            break;
+                        }
+                        return FadeInUp(
+                          delay: Duration(milliseconds: 200 * (index + 1)),
+                          duration: const Duration(milliseconds: 600),
+                          child: _buildSimpleTip(title, description),
+                        );
+                      }),
+                      const SizedBox(height: 60),
+                    ],
                   ),
                 ),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
-        bottomNavigationBar: BannerAdWidget(),
+      ),
+      bottomNavigationBar: BannerAdWidget(),
     );
   }
 

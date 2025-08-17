@@ -1,26 +1,78 @@
 import 'package:flutter/material.dart';
-import 'package:maharat_jazb_alnisa/main.dart';// يمكنك إزالته إذا لم يكن ضروريًا
+import 'package:google_mobile_ads/google_mobile_ads.dart';
+import 'package:maharat_jazb_alnisa/main.dart';
+// --- هذا هو الكود الفعلي لـ BannerAdWidget المُعدّل ---
+class BannerAdWidget extends StatefulWidget {
+  const BannerAdWidget({super.key});
 
-// حل المشكلة: إضافة BannerAdWidget مؤقت هنا
-class BannerAdWidget extends StatelessWidget {
   @override
-  Widget build(BuildContext context) {
-    return Container(
-      color: Colors.pink.shade100,
-      height: 50,
-      child: Center(
-        child: Text(
-          "إعلان بانر هنا",
-          style: TextStyle(
-            fontFamily: 'Amiri',
-            fontSize: 16,
-            color: Colors.black87,
-          ),
-        ),
+  State<BannerAdWidget> createState() => _BannerAdWidgetState();
+}
+
+class _BannerAdWidgetState extends State<BannerAdWidget> {
+  BannerAd? _bannerAd;
+  bool _isAdLoaded = false;
+  final String _adUnitId = 'ca-app-pub-8081293973220877/5841556409'; // غير هذا بـ Ad Unit ID الخاص بإعلان البانر
+
+  @override
+  void initState() {
+    super.initState();
+    _loadBannerAd();
+  }
+
+  void _loadBannerAd() async {
+    // *هذا هو الجزء الذي تم تعديله*
+    // نستخدم getAnchoredAdaptiveBannerAdSize لحساب حجم الإعلان التكيفي
+    final AdSize? size = await AdSize.getAnchoredAdaptiveBannerAdSize(
+      MediaQuery.of(context).orientation,
+      MediaQuery.of(context).size.width.truncate(),
+    );
+
+    if (size == null) {
+      debugPrint('Unable to get adaptive banner size.');
+      return;
+    }
+
+    _bannerAd = BannerAd(
+      adUnitId: _adUnitId,
+      request: const AdRequest(),
+      size: size,
+      listener: BannerAdListener(
+        onAdLoaded: (ad) {
+          debugPrint('BannerAd loaded.');
+          setState(() {
+            _isAdLoaded = true;
+          });
+        },
+        onAdFailedToLoad: (ad, err) {
+          debugPrint('BannerAd failed to load: $err');
+          ad.dispose();
+        },
       ),
     );
+    _bannerAd!.load();
+  }
+
+  @override
+  void dispose() {
+    _bannerAd?.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_isAdLoaded && _bannerAd != null) {
+      return SizedBox(
+        width: _bannerAd!.size.width.toDouble(),
+        height: _bannerAd!.size.height.toDouble(),
+        child: AdWidget(ad: _bannerAd!),
+      );
+    } else {
+      return const SizedBox.shrink();
+    }
   }
 }
+// ------------------------------------------
 
 class ConfidencePage extends StatefulWidget {
   @override
@@ -29,6 +81,80 @@ class ConfidencePage extends StatefulWidget {
 
 class _ConfidencePageState extends State<ConfidencePage> {
   double _fontSize = 16.0;
+
+  // تعريف الإعلانات المدمجة
+  NativeAd? _nativeAd1;
+  NativeAd? _nativeAd2;
+  NativeAd? _nativeAd3;
+  bool _isNativeAd1Loaded = false;
+  bool _isNativeAd2Loaded = false;
+  bool _isNativeAd3Loaded = false;
+
+  final String adUnitId = 'ca-app-pub-8081293973220877/5104529502';
+
+  @override
+  void initState() {
+    super.initState();
+    // تحميل الإعلانات المدمجة عند تهيئة الصفحة
+    _loadNativeAd1();
+    _loadNativeAd2();
+    _loadNativeAd3();
+  }
+
+  // دوال لتحميل الإعلانات
+  void _loadNativeAd1() {
+    _nativeAd1 = NativeAd(
+      adUnitId: adUnitId,
+      factoryId: 'listTile',
+      request: const AdRequest(),
+      listener: NativeAdListener(
+        onAdLoaded: (ad) {
+          setState(() {
+            _isNativeAd1Loaded = true;
+          });
+        },
+        onAdFailedToLoad: (ad, error) {
+          _nativeAd1?.dispose();
+        },
+      ),
+    )..load();
+  }
+
+  void _loadNativeAd2() {
+    _nativeAd2 = NativeAd(
+      adUnitId: adUnitId,
+      factoryId: 'listTile',
+      request: const AdRequest(),
+      listener: NativeAdListener(
+        onAdLoaded: (ad) {
+          setState(() {
+            _isNativeAd2Loaded = true;
+          });
+        },
+        onAdFailedToLoad: (ad, error) {
+          _nativeAd2?.dispose();
+        },
+      ),
+    )..load();
+  }
+
+  void _loadNativeAd3() {
+    _nativeAd3 = NativeAd(
+      adUnitId: adUnitId,
+      factoryId: 'listTile',
+      request: const AdRequest(),
+      listener: NativeAdListener(
+        onAdLoaded: (ad) {
+          setState(() {
+            _isNativeAd3Loaded = true;
+          });
+        },
+        onAdFailedToLoad: (ad, error) {
+          _nativeAd3?.dispose();
+        },
+      ),
+    )..load();
+  }
 
   void _increaseFontSize() {
     setState(() {
@@ -40,6 +166,14 @@ class _ConfidencePageState extends State<ConfidencePage> {
     setState(() {
       _fontSize = _fontSize - 2.0 > 12.0 ? _fontSize - 2.0 : 12.0;
     });
+  }
+
+  @override
+  void dispose() {
+    _nativeAd1?.dispose();
+    _nativeAd2?.dispose();
+    _nativeAd3?.dispose();
+    super.dispose();
   }
 
   @override
@@ -117,8 +251,11 @@ class _ConfidencePageState extends State<ConfidencePage> {
             Expanded(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.all(20.0),
-                child: Text(
-                  '''1. الثقة بالنفس:
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '''1. الثقة بالنفس:
 
 الثقة بالنفس تنبع من شعور الإنسان بقيمته الذاتية بين الناس المحيطين به في كل مكان يتواجد فيه، واستنادًا إلى هذا الشعور تأتي تصرفاته بصورة طبيعية ومن دون قلق، تصرفاته هذه تأتي بناءً على إرادته لا على تأثير الآخرين عليه، وتعتبر الثقة بالنفس من العوامل الرئيسية لانجذاب المرأة نحو الرجل، فالمرأة تقدر الرجل الجريء، الذي يمتلك الثقة الكافية بالنفس للتقرب منها والتعرف عليها.
 
@@ -144,7 +281,28 @@ class _ConfidencePageState extends State<ConfidencePage> {
 * كن على دراية بأن طريقة تصرف الإنسان في المواقف المختلفة ليست إلا نتيجة لمعتقداته، هذه المعتقدات التي تتكون مع الوقت، تترسخ في أذهاننا وتتحول إلى سلوكيات، فإذا كان الرجل يعتقد أنه لا يستطيع التحدث أو التعامل مع النساء -على سبيل المثال- فحتمًا سيؤثر ذلك على سلوكه معهنَّ، وبالتالي سينتابه القلق والتوتر وربما يبدأ بالتلعثم عندما يضطر للحديث معهنَّ.
 * تذكر أن لكل إنسان نقاط قوة ونقاط ضعف، إدراك الإنسان لنقاط قوته فقط يدفعه للغرور، كما أن إدراكه لنقاط ضعفه فقط يولد الشعور بالنقص والإحباط عنده، إدراكهما معًا يُعطيه الثقة الكافية بالنفس.
 * ارجع إلى لغة جسدك واعمل على تصحيحها وذلك بالتخلص من مظاهر ضعف الثقة بالنفس: كالنظر إلى الأرض بصورة دائمة، ضعف نبرة الصوت، ضم اليدين أمام الصدر عند التحدث مع الآخرين بخاصة الغرباء، وهي إيماءة توحي بكبت ما يختلج بالصدر من مشاعر وتقيدها من القيام برد فعل قد يزعج الطرف الآخر، تبرير الأفعال للغرباء، الإنسان الواثق بنفسه لا يقدم التبريرات إلا لمن يراهم معنيين بذلك، فهو يعلم أن الخطأ من الطبيعة الإنسانية، الميل إلى موافقة الآخرين ومسايرتهم في أغلب الأحوال والإذعان لطلباتهم ورغباتهم والحرص الزائد على مشاعرهم وخشية إزعاجهم ولو على حساب حقوقك الشخصية وراحتك، كن مستقلًّا برأيك عن آراء الآخرين، الرد بعصبية على النقد، الإنسان الواثق من نفسه يتعامل مع النقد بموضوعية وروية، التعويض عن نقص الثقة بالنفس من خلال التظاهر بأنك إنسان خارق للطبيعة البشرية كالتظاهر بأنك شخص لا تمرض أو لا تنسى، كثرة الاعتذار ولأتفه الأسباب، كثرة استعمال مفردات مثل: الواحد، الشخص، لا أستطيع، لن أنجح، ربما، في الواقع، لا يوجد شيء يستحق، والتي توحي بضعف الثقة بالنفس، اشطبها جميعها من قاموسك.
-
+''',
+                      style: TextStyle(
+                        fontFamily: 'Amiri',
+                        fontSize: _fontSize,
+                        height: 1.6,
+                        color: Colors.black87,
+                      ),
+                      textAlign: TextAlign.justify,
+                    ),
+                    const SizedBox(height: 10),
+                    // الإعلان الأول
+                    if (_isNativeAd1Loaded && _nativeAd1 != null)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 10.0),
+                        child: Container(
+                          height: 100,
+                          child: AdWidget(ad: _nativeAd1!),
+                        ),
+                      ),
+                    const SizedBox(height: 20),
+                    Text(
+                      '''
 تغيير الأفكار والمعتقدات الخاطئة والتي تحد من إمكاناتك في التعامل مع النساء:
 
 * تعميم التصور الخاطئ أن المرأة الجميلة متكبرة، والحقيقة أن الكثير من النساء الجميلات متواضعات، علاوة على ذلك فإن معظم النساء لا يجدن أنفسهن جذابات كما يجدهم الرجال، وحقيقة الأمر أنه عندما يكون الرجل مضطربًا (خائفًا) فإنه يؤثر بشكل خجل، وعندما تكون الفتاة مضطربة (خائفة) فإنها تؤثر بشكل متكبر، وربما يكون تصرف الفتاة بقسوة أو بصورة متكبرة كنوع من اختبارات السيطرة عند الرجل، لاستكشاف نمط شخصيته، ومعرفة جوانب الضعف فيها، والتي سنشرحها لاحقًا، على العموم أيًّا كان السبب، هذا التكبر يجب أن لا يردع الشاب عن التعارف على الفتاة.
@@ -164,7 +322,28 @@ class _ConfidencePageState extends State<ConfidencePage> {
 * جميع الرجال تملك الميل والانجذاب والاهتمام الغريزي تجاه النساء، وهذا أمر طبيعي، فلا تدع لأحد الفرصة أن يشعرك بالذنب تجاه ميولك الطبيعي نحوهنَّ.
 * عليك التخلي عن الأفكار الجامدة حول النساء والتعامل معهنَّ ومع ردود أفعالهنَّ، كتقديس المرأة وتعظيم وتهويل وتعميم رد فعلها، فالنساء بطبيعتهنَّ تبالغن في ردود أفعالهنَّ، فلا تخشَ من المواجهة ولا تتهرب من الفتيات، بل احرص على التعامل العادي معهنَّ.
 * الصد (الرفض) هو المشكلة الأكبر التي تواجه الشاب في محاولته التعارف على الفتاة، لما يخلق عنده من الإحباط والشعور بالفشل والخوف من سخرية وتهكم الآخرين، الأمر أبسط بكثير مما تتوقع، وكل ما عليك فعله هو التعرف على الاستراتيجيات الصحيحة في التعامل مع الصد بأشكاله المختلفة والتي سأشرحها لك بالتفصيل في الصفحات القادمة من كتابي؛ لتتجنبه أو تتغلب عليه بصورة كلية.
-
+''',
+                      style: TextStyle(
+                        fontFamily: 'Amiri',
+                        fontSize: _fontSize,
+                        height: 1.6,
+                        color: Colors.black87,
+                      ),
+                      textAlign: TextAlign.justify,
+                    ),
+                    const SizedBox(height: 10),
+                    // الإعلان الثاني
+                    if (_isNativeAd2Loaded && _nativeAd2 != null)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 10.0),
+                        child: Container(
+                          height: 100,
+                          child: AdWidget(ad: _nativeAd2!),
+                        ),
+                      ),
+                    const SizedBox(height: 20),
+                    Text(
+                      '''
 تعزيز الثقة بالنفس من خلال ممارسة الرياضة والتنفس العميق والتأمل والاسترخاء العضلي والتدليك والتنويم الإيحائي الذاتي:
 
 نحن بحاجة بصورة دائمة أن نعيد برمجة الأفكار في عقلنا، لكي نستطيع أن نحسن ونطور سلوكنا يجب علينا انتقاء أفكار إيجابية جديدة دائمًا وأن نغذي بها عقلنا الباطن (اللاواعي) بصورة مستمرة ومتكررة، فتكرار الأفكار يرسخها بلا أدنى شك، وبالتأكيد فالأمر يحتاج إلى الوقت الكافي لإعادة البرمجة اللازمة.
@@ -178,13 +357,25 @@ class _ConfidencePageState extends State<ConfidencePage> {
 * التدليك: يساعد على التخلص من التشنجات والتوترات، ينشط الدورة الدموية، يعمل على إرخاء الجسم، يخفض مستوى القلق والاضطراب.
 * التنويم الإيحائي الذاتي: يساعد في علاج التوتر والقلق ويعمل على زيادة الثقة بالنفس والتخلص من الخجل وتحسين القدرة على التحدث وبناء العلاقات، بالإضافة إلى رفع المقدرة على التذكر والتعلم وتحسين مستوى الأداء الرياضي
 ''',
-                  style: TextStyle(
-                    fontFamily: 'Amiri',
-                    fontSize: _fontSize,
-                    height: 1.6,
-                    color: Colors.black87,
-                  ),
-                  textAlign: TextAlign.justify,
+                      style: TextStyle(
+                        fontFamily: 'Amiri',
+                        fontSize: _fontSize,
+                        height: 1.6,
+                        color: Colors.black87,
+                      ),
+                      textAlign: TextAlign.justify,
+                    ),
+                    const SizedBox(height: 10),
+                    // الإعلان الثالث
+                    if (_isNativeAd3Loaded && _nativeAd3 != null)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 10.0),
+                        child: Container(
+                          height: 100,
+                          child: AdWidget(ad: _nativeAd3!),
+                        ),
+                      ),
+                  ],
                 ),
               ),
             ),

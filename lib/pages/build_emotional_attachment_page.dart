@@ -1,5 +1,79 @@
 import 'package:flutter/material.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:maharat_jazb_alnisa/main.dart'; // تأكد من أن BannerAdWidget معرف هنا
+
+// --- هذا هو الكود الفعلي لـ BannerAdWidget المُعدّل ---
+class BannerAdWidget extends StatefulWidget {
+  const BannerAdWidget({super.key});
+
+  @override
+  State<BannerAdWidget> createState() => _BannerAdWidgetState();
+}
+
+class _BannerAdWidgetState extends State<BannerAdWidget> {
+  BannerAd? _bannerAd;
+  bool _isAdLoaded = false;
+  final String _adUnitId = 'ca-app-pub-8081293973220877/5841556409'; // غير هذا بـ Ad Unit ID الخاص بإعلان البانر
+
+  @override
+  void initState() {
+    super.initState();
+    _loadBannerAd();
+  }
+
+  void _loadBannerAd() async {
+    // *هذا هو الجزء الذي تم تعديله*
+    // نستخدم getAnchoredAdaptiveBannerAdSize لحساب حجم الإعلان التكيفي
+    final AdSize? size = await AdSize.getAnchoredAdaptiveBannerAdSize(
+      MediaQuery.of(context).orientation,
+      MediaQuery.of(context).size.width.truncate(),
+    );
+
+    if (size == null) {
+      debugPrint('Unable to get adaptive banner size.');
+      return;
+    }
+
+    _bannerAd = BannerAd(
+      adUnitId: _adUnitId,
+      request: const AdRequest(),
+      size: size,
+      listener: BannerAdListener(
+        onAdLoaded: (ad) {
+          debugPrint('BannerAd loaded.');
+          setState(() {
+            _isAdLoaded = true;
+          });
+        },
+        onAdFailedToLoad: (ad, err) {
+          debugPrint('BannerAd failed to load: $err');
+          ad.dispose();
+        },
+      ),
+    );
+    _bannerAd!.load();
+  }
+
+  @override
+  void dispose() {
+    _bannerAd?.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_isAdLoaded && _bannerAd != null) {
+      return SizedBox(
+        width: _bannerAd!.size.width.toDouble(),
+        height: _bannerAd!.size.height.toDouble(),
+        child: AdWidget(ad: _bannerAd!),
+      );
+    } else {
+      return const SizedBox.shrink();
+    }
+  }
+}
+// ------------------------------------------
 
 class BuildEmotionalAttachmentPage extends StatefulWidget {
   const BuildEmotionalAttachmentPage({super.key});
@@ -11,6 +85,60 @@ class BuildEmotionalAttachmentPage extends StatefulWidget {
 class _BuildEmotionalAttachmentPageState extends State<BuildEmotionalAttachmentPage> {
   double _fontSize = 16.0;
 
+  // تعريف الإعلانات المدمجة
+  NativeAd? _nativeAd1;
+  NativeAd? _nativeAd2;
+
+  bool _isNativeAd1Loaded = false;
+  bool _isNativeAd2Loaded = false;
+
+  final String adUnitId = 'ca-app-pub-8081293973220877/5841556409';
+
+  @override
+  void initState() {
+    super.initState();
+    // تحميل الإعلانات المدمجة عند تهيئة الصفحة
+    _loadNativeAd1();
+    _loadNativeAd2();
+  }
+
+  // دوال لتحميل الإعلانات المدمجة
+  void _loadNativeAd1() {
+    _nativeAd1 = NativeAd(
+      adUnitId: adUnitId,
+      factoryId: 'listTile',
+      request: const AdRequest(),
+      listener: NativeAdListener(
+        onAdLoaded: (ad) {
+          setState(() {
+            _isNativeAd1Loaded = true;
+          });
+        },
+        onAdFailedToLoad: (ad, error) {
+          _nativeAd1?.dispose();
+        },
+      ),
+    )..load();
+  }
+
+  void _loadNativeAd2() {
+    _nativeAd2 = NativeAd(
+      adUnitId: adUnitId,
+      factoryId: 'listTile',
+      request: const AdRequest(),
+      listener: NativeAdListener(
+        onAdLoaded: (ad) {
+          setState(() {
+            _isNativeAd2Loaded = true;
+          });
+        },
+        onAdFailedToLoad: (ad, error) {
+          _nativeAd2?.dispose();
+        },
+      ),
+    )..load();
+  }
+
   void _increaseFontSize() {
     setState(() {
       _fontSize = _fontSize + 2.0 < 24.0 ? _fontSize + 2.0 : 24.0;
@@ -21,6 +149,13 @@ class _BuildEmotionalAttachmentPageState extends State<BuildEmotionalAttachmentP
     setState(() {
       _fontSize = _fontSize - 2.0 > 12.0 ? _fontSize - 2.0 : 12.0;
     });
+  }
+
+  @override
+  void dispose() {
+    _nativeAd1?.dispose();
+    _nativeAd2?.dispose();
+    super.dispose();
   }
 
   @override
@@ -117,13 +252,35 @@ class _BuildEmotionalAttachmentPageState extends State<BuildEmotionalAttachmentP
 مثال 2: أتذكرين كيف كان شعوركِ عندما أبلغوكِ بنجاحكِ في امتحان الشهادة الثانوية؟
 مثال 3: هل تعرفين ذاك الشعور عندما يحقق المرء أجمل أمنياته؟ كيف كانت مشاعركِ عندما قرأتِ نتائج المسابقة ووجدتِ اسمكِ بين الناجحين؟
 مثال 4: لا أستطيع أن أتخيل في الشتاء شيئًا أجمل من حبات الثلج في أول تساقطها على الأرض والأشجار والبيوت، إنه لمنظر جميل ساحر! هل تحبين الثلج؟ ما هي أجمل ذكرياتكِ مع الثلج؟
-
+''',
+                      style: TextStyle(
+                        fontFamily: 'Amiri',
+                        fontSize: _fontSize,
+                        height: 1.6,
+                        color: Colors.black87,
+                      ),
+                      textAlign: TextAlign.justify,
+                    ),
+                    const SizedBox(height: 10),
+                    // الإعلان الأول
+                    if (_isNativeAd1Loaded && _nativeAd1 != null)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 10.0),
+                        child: Container(
+                          height: 100,
+                          child: AdWidget(ad: _nativeAd1!),
+                        ),
+                      ),
+                    
+                    const SizedBox(height: 20),
+                    Text(
+                      '''
 ### 2. أخذ كلمات المرأة وإعادة صياغتها وإرجاعها لها بحيث تكون تأكيد وموافقة لرأيها
 هي تقول: كم أحب ذلك الشعور، عندما أجلس في الشتاء على كرسي إلى جانب المدفأة، وأنا ملتحفة بحرام ناعم، أسمع صوت زخات المطر في الخارج، وأرى حباته المتساقطة على بلور النافذة تنساب برفق.
 فأقول لها: كم إنه لشعور جميل، خاصة عندما يجلس المرء وبجانبه كوب من الشاي الساخن أو الكاكاو يرتشف منها وهو يتأمل منظر حبات المطر المتساقطة على بلور النافذة.
 
 ### 3. رواية القصص العاطفية بصورة خاصة والقصص المثيرة بصورة عامة
-لكي تقود محادثة عاطفية مع المرأة يجب أن تروي قصصًا حميمية ممتعة، قصصًا عاطفية ومثيرة وعن عالم الرفاهية، بعد ذلك تضع أسئلة عاطفية، أنت يجب أن تثير عاطفة المرأة، تجعلها حزينة، تجعلها مبتسمة، مرتبكة، كل نوع من تحريك المشاعر عند المرأة هو نقطة في صالحك. فالنساء تتناول القصة بشكل مختلف عن الرجال، هنَّ لا يتبعن المنحى الرئيسي للقصة، هنَّ يتبعن الاتصالات المتشعبة (أي ما خلف القصة)، يجب الانتباه لما تحويه القصة من معاني: العائلة، الأصدقاء، النجاح، حولك شخصيًّا. وإليك بعض الأمثلة:
+لكي تقود محادثة عاطفية مع المرأة يجب أن تروي قصصًا حميمية ممتعة، قصصًا عاطفية ومثيرة وعن عالم الرفاهية، بعد ذلك تضع أسئلة عاطفية، أنت يجب أن تثير عاطفة المرأة، تجعلها حزينة، تجعلها مبتسمة، مرتبكة، كل نوع من تحريك المشاعر عند المرأة هو نقطة في صالحك. فالنساء تتناول القصة بشكل مختلف عن الرجال، هنَّ لا يتبعن المنحى الرئيسي للقصة، هن يتبعن الاتصالات المتشعبة (أي ما خلف القصة)، يجب الانتباه لما تحويه القصة من معاني: العائلة، الأصدقاء، النجاح، حولك شخصيًّا. وإليك بعض الأمثلة:
 
 قصة عاطفية (1):
 عندما كنت عائدًا البارحة إلى البيت وجدت في الطريق قطة صغيرة، كانت تبدو جميلة، كانت جائعة تموء وهي ترتجف، فكرت أن أحضرها معي إلى البيت، لم تكن قادرة على المشي، في البيت أحضرت لها أمي صحنًا من الحليب الساخن وأجلستها بجانب المدفأة على مسند صغير وبدأت تداعبها، القطة بدأت تتحسن رويدًا رويدًا، لتبدأ بعدها في اللعب في أرض الغرفة، كانت تتقرب باستمرار من أختي الصغيرة تريد أن تلعب معها (لا يوجد شيء يحرك مشاعر المرأة مثل قصة الحيوان الحزينة والبطل).
@@ -148,8 +305,7 @@ class _BuildEmotionalAttachmentPageState extends State<BuildEmotionalAttachmentP
 * هي تمد يدها لتناول كوبها من العصير، أنت تحاكيها بمد يدك لتناول كوبك من العصير في نفس اللحظة.
 * هي تمسك كوبها من العصير بكلتا اليدين، أنت تحاكيها بمسك كوبك من العصير بكلتا اليدين في نفس اللحظة.
 * هي تبتسم فابتسم، هي تضحك فاضحك، تحك كوعها فحك كوعك، هي تضع رجلًا على رجل فضع رجلًا على رجل في نفس اللحظة.
-'''
-                      ,
+''',
                       style: TextStyle(
                         fontFamily: 'Amiri',
                         fontSize: _fontSize,
@@ -158,14 +314,14 @@ class _BuildEmotionalAttachmentPageState extends State<BuildEmotionalAttachmentP
                       ),
                       textAlign: TextAlign.justify,
                     ),
-                    const SizedBox(height: 16.0), // مسافة قبل الصورة
+                    const SizedBox(height: 16.0),
                     Center(
                       child: Image.asset(
-                        'assets/images/emotional_attachment_example.jpg', // مسار الصورة الجديد هنا
+                        'assets/images/emotional_attachment_example.jpg',
                         fit: BoxFit.contain,
                       ),
                     ),
-                    const SizedBox(height: 16.0), // مسافة بعد الصورة
+                    const SizedBox(height: 16.0),
                     Text(
                       '''
 أمثلة توضيحية مصورة عن المحاكاة
@@ -178,6 +334,16 @@ class _BuildEmotionalAttachmentPageState extends State<BuildEmotionalAttachmentP
                       ),
                       textAlign: TextAlign.justify,
                     ),
+                    const SizedBox(height: 10),
+                    // الإعلان الثاني
+                    if (_isNativeAd2Loaded && _nativeAd2 != null)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 10.0),
+                        child: Container(
+                          height: 100,
+                          child: AdWidget(ad: _nativeAd2!),
+                        ),
+                      ),
                   ],
                 ),
               ),

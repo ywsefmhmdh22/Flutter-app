@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
+import 'package:flutter/foundation.dart';
 
 // استيراد الصفحات
 import 'sections_page.dart';
@@ -8,17 +9,43 @@ import 'RelationshipPath_Page.dart';
 import 'tip_Page.dart';
 import 'attract_page.dart';
 import 'pdfbook_page.dart';
-import 'experience_page.dart'; // صفحة المنتدى
+import 'experience_page.dart';
 import 'intellectual_property_page.dart';
 import 'privacy_policy_page.dart';
 import 'report_problem_page.dart';
 import 'topics_page.dart';
 import 'online_topics_page.dart';
 import 'ContactUs_Page.dart';
+import 'app_open_ad_manager.dart';
+
+// مُعرف إعلان فتح التطبيق
+const String appOpenAdUnitId = "ca-app-pub-8081293973220877/3843434636";
+
+// مُعرف الإعلان المدمج
+const String nativeAdUnitId = "ca-app-pub-8081293973220877/5104529502";
+
+AppOpenAd? myAppOpenAd;
+
+Future<void> loadAppOpenAd() async {
+  await AppOpenAd.load(
+    adUnitId: appOpenAdUnitId,
+    request: const AdRequest(),
+    adLoadCallback: AppOpenAdLoadCallback(
+      onAdLoaded: (ad) {
+        myAppOpenAd = ad;
+        myAppOpenAd!.show();
+      },
+      onAdFailedToLoad: (error) {
+        print('فشل تحميل إعلان فتح التطبيق: \$error');
+      },
+    ),
+  );
+}
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await MobileAds.instance.initialize(); // تهيئة الإعلانات فقط
+  await MobileAds.instance.initialize();
+  await loadAppOpenAd();
   runApp(const MyApp());
 }
 
@@ -99,6 +126,7 @@ class WelcomePage extends StatelessWidget {
   }
 }
 
+// إعلان بانر
 class BannerAdWidget extends StatefulWidget {
   @override
   _BannerAdWidgetState createState() => _BannerAdWidgetState();
@@ -122,7 +150,7 @@ class _BannerAdWidgetState extends State<BannerAdWidget> {
           });
         },
         onAdFailedToLoad: (ad, error) {
-          print('Ad failed to load: $error');
+          print('Ad failed to load: \$error');
           ad.dispose();
         },
       ),
@@ -148,6 +176,60 @@ class _BannerAdWidgetState extends State<BannerAdWidget> {
       );
     } else {
       return const SizedBox();
+    }
+  }
+}
+
+// إعلان مدمج (Native Ad)
+class NativeAdWidget extends StatefulWidget {
+  const NativeAdWidget({super.key});
+
+  @override
+  State<NativeAdWidget> createState() => _NativeAdWidgetState();
+}
+
+class _NativeAdWidgetState extends State<NativeAdWidget> {
+  NativeAd? _nativeAd;
+  bool _isAdLoaded = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _nativeAd = NativeAd(
+      adUnitId: nativeAdUnitId,
+      factoryId: 'adFactoryExample',
+      request: const AdRequest(),
+      listener: NativeAdListener(
+        onAdLoaded: (ad) {
+          setState(() {
+            _nativeAd = ad as NativeAd;
+            _isAdLoaded = true;
+          });
+        },
+        onAdFailedToLoad: (ad, error) {
+          ad.dispose();
+          print('فشل تحميل الإعلان المدمج: \$error');
+        },
+      ),
+    )..load();
+  }
+
+  @override
+  void dispose() {
+    _nativeAd?.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_isAdLoaded && _nativeAd != null) {
+      return Container(
+        height: 100,
+        alignment: Alignment.center,
+        child: AdWidget(ad: _nativeAd!),
+      );
+    } else {
+      return const SizedBox.shrink();
     }
   }
 }
